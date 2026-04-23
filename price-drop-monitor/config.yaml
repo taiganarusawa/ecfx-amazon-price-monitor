@@ -1,0 +1,15 @@
+products:
+  - name: "Sony WH-1000XM5 Headphones"
+    url: "https://www.amazon.com/dp/B09XS7JWHH"
+  - name: "ThermoFlask Water Bottle"
+    url: "https://www.amazon.com/dp/B00JEZ20GO"
+  - name: "Logitech G Pro Keyboard"
+    url: "https://www.amazon.com/dp/B07QQB9VCV"
+
+checkIntervalMinutes: 30
+priceDropThresholdPercent: 5.0
+
+notification:
+  method: "dashboard"
+
+testMode: false
