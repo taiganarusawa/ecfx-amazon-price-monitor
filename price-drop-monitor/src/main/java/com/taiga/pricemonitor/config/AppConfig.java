@@ -13,7 +13,7 @@ public class AppConfig {
         return products;
     }
 
-    public int getcheckIntervalMinutes() {
+    public int getCheckIntervalMinutes() {
         return checkIntervalMinutes;
     }
 
