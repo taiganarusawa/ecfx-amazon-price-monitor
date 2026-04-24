@@ -2,15 +2,23 @@ package com.taiga.pricemonitor;
 
 import com.taiga.pricemonitor.config.AppConfig;
 import com.taiga.pricemonitor.config.ConfigLoader;
-import com.taiga.pricemonitor.db.DatabaseService;
+import com.taiga.pricemonitor.config.ProductConfig;
+import com.taiga.pricemonitor.scraper.AmazonScraper;
+import com.taiga.pricemonitor.scraper.ScrapedProduct;
+import com.taiga.pricemonitor.scraper.ScraperException;
 
 public class App {
     public static void main(String[] args) {
         AppConfig config = ConfigLoader.load("config.yaml");
-        DatabaseService db = new DatabaseService("prices.db");
+        AmazonScraper scraper = new AmazonScraper();
 
-        db.savePrice("https://www.amazon.com/dp/B09XS7JWHH", "Sony Headphones", 279.99);
-        Double lastPrice = db.getLastPrice("https://www.amazon.com/dp/B09XS7JWHH");
-        System.out.println("Last price retrieved: $" + lastPrice);
+        for (ProductConfig product : config.getProducts()) {
+            try {
+                ScrapedProduct scraped = scraper.scrape(product.getUrl());
+                System.out.println(scraped.getName() + " -> $" + scraped.getPrice());
+            } catch (ScraperException e) {
+                System.out.println("Failed to scrape " + product.getName() + ": " + e.getMessage());
+            }
+        }
     }
 }
