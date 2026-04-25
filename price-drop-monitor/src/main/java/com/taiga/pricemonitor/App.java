@@ -1,14 +1,12 @@
 package com.taiga.pricemonitor;
 
 import com.taiga.pricemonitor.comparison.PriceComparator;
-import com.taiga.pricemonitor.comparison.PriceDropResult;
 import com.taiga.pricemonitor.config.AppConfig;
 import com.taiga.pricemonitor.config.ConfigLoader;
-import com.taiga.pricemonitor.config.ProductConfig;
 import com.taiga.pricemonitor.db.DatabaseService;
 import com.taiga.pricemonitor.scraper.AmazonScraper;
-import com.taiga.pricemonitor.scraper.ScrapedProduct;
-import com.taiga.pricemonitor.scraper.ScraperException;
+import com.taiga.pricemonitor.service.PriceCheckService;
+import com.taiga.pricemonitor.service.Scheduler;
 
 public class App {
     public static void main(String[] args) {
@@ -16,26 +14,18 @@ public class App {
         DatabaseService db = new DatabaseService("prices.db");
         AmazonScraper scraper = new AmazonScraper();
         PriceComparator comparator = new PriceComparator(config.getPriceDropThresholdPercent());
+        PriceCheckService checkService = new PriceCheckService(scraper, db, comparator);
+        Scheduler scheduler = new Scheduler(config, checkService);
 
-        for (ProductConfig product : config.getProducts()) {
-            try {
-                Double previousPrice = db.getLastPrice(product.getUrl());
-                ScrapedProduct scraped = scraper.scrape(product.getUrl());
-                PriceDropResult result = comparator.compare(previousPrice, scraped.getPrice());
+        Runtime.getRuntime().addShutdownHook(new Thread(scheduler::stop));
 
-                db.savePrice(product.getUrl(), scraped.getName(), scraped.getPrice());
+        scheduler.start();
 
-                if (result.isDrop()) {
-                    System.out.println("[PRICE DROP] " + scraped.getName() +
-                        " | $" + result.getPreviousPrice() + " -> $" + result.getCurrentPrice() +
-                        " (" + String.format("%.2f", result.getDropPercent()) + "% off)");
-                } else {
-                    System.out.println("[OK] " + scraped.getName() + " -> $" + scraped.getPrice());
-                }
-
-            } catch (ScraperException e) {
-                System.out.println("[FAIL] " + product.getName() + ": " + e.getMessage());
-            }
+        // Keep main thread alive so the scheduler can keep running
+        try {
+            Thread.currentThread().join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }
