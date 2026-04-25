@@ -3,6 +3,7 @@ package com.taiga.pricemonitor;
 import com.taiga.pricemonitor.comparison.PriceComparator;
 import com.taiga.pricemonitor.config.AppConfig;
 import com.taiga.pricemonitor.config.ConfigLoader;
+import com.taiga.pricemonitor.dashboard.DashboardServer;
 import com.taiga.pricemonitor.db.DatabaseService;
 import com.taiga.pricemonitor.scraper.AmazonScraper;
 import com.taiga.pricemonitor.service.PriceCheckService;
@@ -16,12 +17,17 @@ public class App {
         PriceComparator comparator = new PriceComparator(config.getPriceDropThresholdPercent());
         PriceCheckService checkService = new PriceCheckService(scraper, db, comparator);
         Scheduler scheduler = new Scheduler(config, checkService);
+        DashboardServer dashboard = new DashboardServer(config, db);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(scheduler::stop));
+        // Graceful shutdown on Ctrl+C
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            scheduler.stop();
+            dashboard.stop();
+        }));
 
         scheduler.start();
+        dashboard.start();
 
-        // Keep main thread alive so the scheduler can keep running
         try {
             Thread.currentThread().join();
         } catch (InterruptedException e) {

@@ -6,7 +6,7 @@ products:
   - name: "Logitech G Pro Keyboard"
     url: "https://www.amazon.com/dp/B07QQB9VCV"
 
-checkIntervalMinutes: 1
+checkIntervalMinutes: 30
 priceDropThresholdPercent: 5.0
 
 notification:
