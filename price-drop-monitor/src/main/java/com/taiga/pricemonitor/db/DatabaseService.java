@@ -54,7 +54,7 @@ public class DatabaseService {
         String sql = """
             SELECT price FROM price_history
             WHERE product_url = ?
-            ORDER BY checked_at DESC
+            ORDER BY checked_at DESC, id DESC
             LIMIT 1
             """;
         try (Connection conn = DriverManager.getConnection(dbUrl);
@@ -74,7 +74,7 @@ public class DatabaseService {
         String sql = """
             SELECT product_name, price, checked_at FROM price_history
             WHERE product_url = ?
-            ORDER BY checked_at ASC
+            ORDER BY checked_at ASC, id ASC
             """;
         List<PriceRecord> history = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection(dbUrl);
