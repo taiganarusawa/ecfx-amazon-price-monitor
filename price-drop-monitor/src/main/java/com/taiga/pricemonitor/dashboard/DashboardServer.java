@@ -41,13 +41,17 @@ public class DashboardServer {
             res.type("application/json");
             Map<String, Object> response = new HashMap<>();
 
+            response.put("checkIntervalMinutes", config.getCheckIntervalMinutes());
+
+            Map<String, Object> products = new HashMap<>();
             for (ProductConfig product : config.getProducts()) {
                 List<PriceRecord> history = db.getPriceHistory(product.getUrl());
                 Map<String, Object> productData = new HashMap<>();
                 productData.put("name", product.getName());
                 productData.put("history", history);
-                response.put(product.getUrl(), productData);
+                products.put(product.getUrl(), productData);
             }
+            response.put("products", products);
 
             return gson.toJson(response);
         });

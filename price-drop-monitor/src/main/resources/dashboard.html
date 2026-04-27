@@ -97,8 +97,8 @@
             const cardsContainer = document.getElementById('cards');
             cardsContainer.innerHTML = '';
 
-            for (const url in data) {
-                const product = data[url];
+            for (const url in data.products) {
+                const product = data.products[url];
                 const safeId = url.replace(/[^a-zA-Z0-9]/g, '');
                 const history = product.history;
                 if (history.length === 0) continue;
@@ -206,7 +206,12 @@
                 });
             }
 
-            document.getElementById('last-updated').textContent = 'Last loaded: ' + new Date().toLocaleString();
+            const intervalMs = (data.checkIntervalMinutes || 30) * 60 * 1000;
+            const nextRefresh = new Date(Date.now() + intervalMs);
+            document.getElementById('last-updated').textContent =
+                `Last loaded: ${new Date().toLocaleString()} \u2022 Next refresh: ${nextRefresh.toLocaleTimeString()}`;
+
+            setTimeout(loadData, intervalMs);
         }
 
         if ('Notification' in window && Notification.permission === 'default') {
@@ -214,7 +219,6 @@
         }
 
         loadData();
-        setInterval(loadData, 60000);
     </script>
 </body>
 </html>
