@@ -63,6 +63,9 @@ products:
 checkIntervalMinutes: 30
 priceDropThresholdPercent: 10.0
 
+dashboardPort: 4567
+scraperTimeoutSeconds: 10
+
 notification:
   method: "dashboard"
 ```
@@ -73,6 +76,8 @@ notification:
 | `checkIntervalMinutes` | How often to scrape prices. The dashboard refreshes on the same interval. |
 | `priceDropThresholdPercent` | Minimum percentage drop required to trigger a notification. |
 | `notification.method` | Currently only `dashboard` is supported. |
+| `dashboardPort` | Port for the web dashboard. |
+| `scraperTimeoutSeconds` | How long to wait for the scraper before giving up. |
 
 ---
 

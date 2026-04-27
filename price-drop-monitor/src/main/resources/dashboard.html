@@ -214,11 +214,16 @@
             setTimeout(loadData, intervalMs);
         }
 
-        if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
+        async function init() {
+            // Wait for the user's notification choice before loading data,
+            // so the first page load can fire desktop alerts on existing drops
+            if ('Notification' in window && Notification.permission === 'default') {
+                await Notification.requestPermission();
+            }
+            loadData();
         }
 
-        loadData();
+        init();
     </script>
 </body>
 </html>

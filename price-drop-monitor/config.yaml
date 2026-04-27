@@ -9,6 +9,9 @@ products:
 checkIntervalMinutes: 30
 priceDropThresholdPercent: 10.0
 
+dashboardPort: 4567
+scraperTimeoutSeconds: 10
+
 notification:
   method: "dashboard"
 
