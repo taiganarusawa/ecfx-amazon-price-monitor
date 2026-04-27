@@ -6,8 +6,8 @@ public class ProductConfig {
 
     public String getName() { 
         return name; 
-    
     }
+    
     public String getUrl() { 
         return url; 
     }

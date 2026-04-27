@@ -36,8 +36,11 @@ public class PriceCheckService {
             db.savePrice(product.getUrl(), scraped.getName(), scraped.getPrice());
 
             if (result.isDrop()) {
-                logger.warn("Price drop detected for {}: previous={} current={} dropPercent={:.2f}%",
-                        scraped.getName(), result.getPreviousPrice(), result.getCurrentPrice(), result.getDropPercent());
+                logger.warn("Price drop detected for {}: previous={} current={} dropPercent={}%",
+                    scraped.getName(),
+                    result.getPreviousPrice(),
+                    result.getCurrentPrice(),
+                    String.format("%.2f", result.getDropPercent()));
             }
         } catch (ScraperException e) {
             logger.error("Error occurred while checking product: {}", product.getName(), e);
