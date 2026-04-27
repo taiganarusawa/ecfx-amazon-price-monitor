@@ -2,8 +2,6 @@
 
 A Java application that monitors Amazon product prices on a schedule, persists the history, and alerts the user when a meaningful price drop is detected.
 
-Built as a take-home project for ECFX.
-
 ---
 
 ## What it does
@@ -42,18 +40,16 @@ Built as a take-home project for ECFX.
 ## Setup
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/price-drop-monitor.git
+git clone https://github.com/taiganarusawa/price-drop-monitor.git
 cd price-drop-monitor
 mvn clean install
 ```
-
-That's it. Maven downloads all dependencies. SQLite needs no setup — the database is a file created on first run.
 
 ---
 
 ## Configuration
 
-All runtime configuration lives in `config.yaml` at the project root. Add or remove products by editing this file — no code changes needed.
+All runtime configuration lives in `config.yaml` at the project root. Add or remove products by editing this file, so no code changes needed.
 
 ```yaml
 products:
@@ -111,8 +107,8 @@ The application will scrape prices on the configured interval, but you don't nee
 
 Run the app and let one check cycle complete (about 5 seconds for the initial scrape). Then:
 
-- Open the dashboard at `http://localhost:4567` — you should see three product cards with current prices and (eventually) charts
-- Inspect `prices.db` with any SQLite client (DB Browser for SQLite, the SQLite Viewer VS Code extension, or `sqlite3` CLI) — you'll see one row per product per check
+- Open the dashboard at `http://localhost:4567`, you should see three product cards with current prices and charts
+- Inspect `prices.db` with any SQLite client (DB Browser for SQLite, the SQLite Viewer VS Code extension) and you can view each row with its URL, name, price, and timestamp.
 
 ### 2. Verify drop detection and notification
 
@@ -180,7 +176,7 @@ price-drop-monitor/
 │   │   │   ├── comparison/     Price drop detection logic
 │   │   │   ├── service/        Scheduler and check orchestration
 │   │   │   ├── dashboard/      Spark web server and HTML
-│   │   │   └── App.java        Entry point — wires everything together
+│   │   │   └── App.java        Entry point
 │   │   └── resources/
 │   │       ├── dashboard.html  Dashboard UI (Chart.js + vanilla JS)
 │   │       └── logback.xml     Logging configuration
@@ -194,14 +190,8 @@ price-drop-monitor/
 
 ---
 
-## Design notes and tradeoffs
+## Design notes, tradeoffs, and known limitations
 
-See `design-doc.md` for a detailed discussion of the three main tradeoffs considered during the build, and `AI-NOTES.md` for an honest account of where AI assistance helped and where it misled.
+See `design-doc.md` for the three main tradeoffs I considered (storage, notification, scraping) along with known limitations and what I'd change at scale.
 
----
-
-## Known limitations
-
-- **Amazon bot detection** — direct scraping is fragile. Amazon may serve CAPTCHAs or rate-limit the scraper, which surfaces in the logs as `ScraperException: Could not find product title`. The system handles this gracefully (errors logged, scheduler continues), but the production-correct fix is the official Amazon Product Advertising API. See `design-doc.md`.
-- **Notifications require dashboard tab open** — desktop notifications fire from the browser, so the dashboard must be open in some tab. A server-side email or webhook channel would be the production answer.
-- **No retry/backoff on scrape failures** — failed scrapes wait until the next scheduled cycle rather than retrying immediately. Reasonable for a 30-minute cadence; would matter at higher frequencies.
+See `AI-NOTES.md` for an honest account of one bug the AI generated that my tests caught.
