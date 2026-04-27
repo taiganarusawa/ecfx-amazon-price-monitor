@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Price Drop Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f7; margin: 0; padding: 24px; color: #1d1d1f; }
+        h1 { text-align: center; margin-bottom: 32px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .card h2 { font-size: 18px; margin: 0 0 12px 0; }
+        .current-price { font-size: 28px; font-weight: 600; color: #1d1d1f; margin-bottom: 12px; }
+        .alert { background: #ffebee; color: #c62828; padding: 12px; border-radius: 8px; font-weight: 600; margin-bottom: 16px; }
+        canvas { max-height: 300px; }
+        .last-updated { text-align: center; color: #86868b; font-size: 14px; margin-top: 32px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Price Drop Monitor</h1>
+        <div id="cards"></div>
+        <p class="last-updated" id="last-updated"></p>
+    </div>
+    <script>
+        async function loadData() {
+            const response = await fetch('/api/history');
+            const data = await response.json();
+            const cardsContainer = document.getElementById('cards');
+            cardsContainer.innerHTML = '';
+
+            for (const url in data) {
+                const product = data[url];
+                const safeId = url.replace(/[^a-zA-Z0-9]/g, '');
+                const history = product.history;
+                if (history.length === 0) continue;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h2></h2>
+                    <div class="current-price" id="price-${safeId}"></div>
+                    <div class="alert" id="alert-${safeId}" style="display:none;"></div>
+                    <canvas id="chart-${safeId}"></canvas>
+                `;
+                card.querySelector('h2').textContent = product.name;
+                cardsContainer.appendChild(card);
+
+                const latest = history[history.length - 1];
+                document.getElementById('price-' + safeId).textContent = '$' + latest.price.toFixed(2);
+
+                if (history.length >= 2) {
+                    const previous = history[history.length - 2];
+                    if (latest.price < previous.price) {
+                        const dropPercent = ((previous.price - latest.price) / previous.price * 100).toFixed(2);
+                        const alertEl = document.getElementById('alert-' + safeId);
+                        alertEl.style.display = 'block';
+                        alertEl.textContent = `PRICE DROP: $${previous.price.toFixed(2)} -> $${latest.price.toFixed(2)} (${dropPercent}% off)`;
+                    }
+                }
+
+                const ctx = document.getElementById('chart-' + safeId).getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: history.map(h => new Date(h.checkedAt).toLocaleString()),
+                        datasets: [{
+                            label: 'Price',
+                            data: history.map(h => h.price),
+                            borderColor: '#0071e3',
+                            backgroundColor: 'rgba(0, 113, 227, 0.1)',
+                            tension: 0.2,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: false, ticks: { callback: v => '$' + v } } }
+                    }
+                });
+            }
+
+            document.getElementById('last-updated').textContent = 'Last loaded: ' + new Date().toLocaleString();
+        }
+
+        loadData();
+        setInterval(() => location.reload(), 60000);
+    </script>
+</body>
+</html>

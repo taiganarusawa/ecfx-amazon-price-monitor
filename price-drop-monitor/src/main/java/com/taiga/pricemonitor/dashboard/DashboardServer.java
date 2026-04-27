@@ -33,7 +33,7 @@ public class DashboardServer {
         // Main dashboard page
         Spark.get("/", (req, res) -> {
             res.type("text/html");
-            return DashboardHtml.render(config.getProducts());
+            return DashboardHtml.render();
         });
 
         // JSON endpoint that returns price history for all products

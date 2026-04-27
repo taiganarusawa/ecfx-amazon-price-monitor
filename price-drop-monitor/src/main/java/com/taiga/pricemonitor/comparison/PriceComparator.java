@@ -14,7 +14,6 @@ public class PriceComparator {
 
     // Compares the current price against the previous price
     // Returns a result indicating whether the drop crossed the threshold
-
     public PriceDropResult compare(Double previousPrice, double currentPrice) {
         if (previousPrice == null) {
             logger.info("No previous price available, treating as no drop");
