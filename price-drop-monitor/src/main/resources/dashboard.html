@@ -4,16 +4,84 @@
     <title>Price Drop Monitor</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f5f7; margin: 0; padding: 24px; color: #1d1d1f; }
-        h1 { text-align: center; margin-bottom: 32px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .card h2 { font-size: 18px; margin: 0 0 12px 0; }
-        .current-price { font-size: 28px; font-weight: 600; color: #1d1d1f; margin-bottom: 12px; }
-        .alert { background: #ffebee; color: #c62828; padding: 12px; border-radius: 8px; font-weight: 600; margin-bottom: 16px; }
-        canvas { max-height: 300px; }
-        .last-updated { text-align: center; color: #86868b; font-size: 14px; margin-top: 32px; }
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f7;
+            margin: 0;
+            padding: 24px;
+            color: #1d1d1f;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin: 0 0 12px 0;
+        }
+
+        .current-price {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 4px;
+        }
+
+        .delta {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .delta.up {
+            color: #c62828;
+        }
+
+        .delta.down {
+            color: #2e7d32;
+        }
+
+        .delta.neutral {
+            color: #86868b;
+        }
+
+        .alert {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #86868b;
+            font-size: 14px;
+            margin-top: 32px;
+        }
     </style>
 </head>
 <body>
@@ -40,6 +108,7 @@
                 card.innerHTML = `
                     <h2></h2>
                     <div class="current-price" id="price-${safeId}"></div>
+                    <div class="delta" id="delta-${safeId}"></div>
                     <div class="alert" id="alert-${safeId}" style="display:none;"></div>
                     <canvas id="chart-${safeId}"></canvas>
                 `;
@@ -49,15 +118,48 @@
                 const latest = history[history.length - 1];
                 document.getElementById('price-' + safeId).textContent = '$' + latest.price.toFixed(2);
 
+                // Delta indicator — gives magnitude context that the chart alone can't
+                const deltaEl = document.getElementById('delta-' + safeId);
                 if (history.length >= 2) {
                     const previous = history[history.length - 2];
+                    const diff = latest.price - previous.price;
+                    if (diff === 0) {
+                        deltaEl.textContent = 'No change since last check';
+                        deltaEl.classList.add('neutral');
+                    } else {
+                        const direction = diff < 0 ? '\u2193' : '\u2191';
+                        const pct = Math.abs(diff / previous.price * 100).toFixed(2);
+                        deltaEl.textContent = `${direction} $${Math.abs(diff).toFixed(2)} (${pct}%) since last check`;
+                        deltaEl.classList.add(diff < 0 ? 'down' : 'up');
+                    }
+
+                    // Price drop alert — only show on a real drop
                     if (latest.price < previous.price) {
                         const dropPercent = ((previous.price - latest.price) / previous.price * 100).toFixed(2);
                         const alertEl = document.getElementById('alert-' + safeId);
                         alertEl.style.display = 'block';
                         alertEl.textContent = `PRICE DROP: $${previous.price.toFixed(2)} -> $${latest.price.toFixed(2)} (${dropPercent}% off)`;
+                    
+                        // Send a browser notification since the UI banner is easy to miss
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            new Notification('Price Drop Detected', {
+                                body: `${product.name}\n$${previous.price.toFixed(2)} -> $${latest.price.toFixed(2)} (${dropPercent}% off)`,
+                                tag: safeId
+                            });
+                        }
                     }
+                } else {
+                    deltaEl.textContent = 'First price recorded';
+                    deltaEl.classList.add('neutral');
                 }
+
+                // Cap y-axis zoom so small changes don't look dramatic
+                const prices = history.map(h => h.price);
+                const minPrice = Math.min(...prices);
+                const maxPrice = Math.max(...prices);
+                const padding = Math.max((maxPrice - minPrice) * 0.5, maxPrice * 0.1);
+                const yMin = Math.max(0, minPrice - padding);
+                const yMax = maxPrice + padding;
 
                 const ctx = document.getElementById('chart-' + safeId).getContext('2d');
                 new Chart(ctx, {
@@ -66,7 +168,7 @@
                         labels: history.map(h => new Date(h.checkedAt).toLocaleString()),
                         datasets: [{
                             label: 'Price',
-                            data: history.map(h => h.price),
+                            data: prices,
                             borderColor: '#0071e3',
                             backgroundColor: 'rgba(0, 113, 227, 0.1)',
                             tension: 0.2,
@@ -75,8 +177,31 @@
                     },
                     options: {
                         responsive: true,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: false, ticks: { callback: v => '$' + v } } }
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => '$' + ctx.parsed.y.toFixed(2)
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    autoSkip: true,
+                                    maxTicksLimit: 8,
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            },
+                            y: {
+                                min: yMin,
+                                max: yMax,
+                                ticks: {
+                                    callback: v => '$' + v.toFixed(2)
+                                }
+                            }
+                        }
                     }
                 });
             }
@@ -84,8 +209,12 @@
             document.getElementById('last-updated').textContent = 'Last loaded: ' + new Date().toLocaleString();
         }
 
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
         loadData();
-        setInterval(() => location.reload(), 60000);
+        setInterval(loadData, 60000);
     </script>
 </body>
 </html>
