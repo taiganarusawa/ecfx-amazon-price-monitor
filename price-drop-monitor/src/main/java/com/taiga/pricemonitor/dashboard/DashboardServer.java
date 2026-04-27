@@ -16,7 +16,6 @@ import java.util.Map;
 public class DashboardServer {
 
     private static final Logger logger = LoggerFactory.getLogger(DashboardServer.class);
-    private static final int PORT = 4567;
 
     private final AppConfig config;
     private final DatabaseService db;
@@ -28,7 +27,7 @@ public class DashboardServer {
     }
 
     public void start() {
-        Spark.port(PORT);
+        Spark.port(config.getDashboardPort());
 
         // Main dashboard page
         Spark.get("/", (req, res) -> {
@@ -57,7 +56,7 @@ public class DashboardServer {
         });
 
         Spark.awaitInitialization();
-        logger.info("Dashboard server running at http://localhost:{}", PORT);
+        logger.info("Dashboard server running at http://localhost:{}", config.getDashboardPort());
     }
 
     public void stop() {

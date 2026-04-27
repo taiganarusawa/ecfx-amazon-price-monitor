@@ -13,7 +13,7 @@ public class App {
     public static void main(String[] args) {
         AppConfig config = ConfigLoader.load("config.yaml");
         DatabaseService db = new DatabaseService("prices.db");
-        AmazonScraper scraper = new AmazonScraper();
+        AmazonScraper scraper = new AmazonScraper(config.getScraperTimeoutSeconds());
         PriceComparator comparator = new PriceComparator(config.getPriceDropThresholdPercent());
         PriceCheckService checkService = new PriceCheckService(scraper, db, comparator);
         Scheduler scheduler = new Scheduler(config, checkService);

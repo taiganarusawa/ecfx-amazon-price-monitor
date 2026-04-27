@@ -13,14 +13,19 @@ public class AmazonScraper {
 
     private static final String USER_AGENT = 
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
-    private static final int TIMEOUT_MS = 10000;
+
+    private final int timeoutMs;
+
+    public AmazonScraper(int timeoutSeconds) {
+        this.timeoutMs = timeoutSeconds * 1000;
+    }
 
     public ScrapedProduct scrape(String url) throws ScraperException {
         try {
             Document doc = Jsoup.connect(url)
                 .userAgent(USER_AGENT)
                 .header("Accept-Language", "en-US,en;q=0.9")
-                .timeout(TIMEOUT_MS)
+                .timeout(timeoutMs)
                 .get();
 
             String name = extractName(doc);

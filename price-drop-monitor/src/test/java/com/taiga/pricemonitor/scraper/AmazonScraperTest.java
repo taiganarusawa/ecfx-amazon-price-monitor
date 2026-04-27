@@ -19,7 +19,7 @@ public class AmazonScraperTest {
             </body></html>
             """;
         Document doc = Jsoup.parse(html);
-        AmazonScraper scraper = new AmazonScraper();
+        AmazonScraper scraper = new AmazonScraper(10);
 
         // Use reflection since extractPrice is private
         Method method = AmazonScraper.class.getDeclaredMethod("extractPrice", Document.class);
@@ -37,7 +37,7 @@ public class AmazonScraperTest {
             </body></html>
             """;
         Document doc = Jsoup.parse(html);
-        AmazonScraper scraper = new AmazonScraper();
+        AmazonScraper scraper = new AmazonScraper(10);
 
         Method method = AmazonScraper.class.getDeclaredMethod("extractPrice", Document.class);
         method.setAccessible(true);
@@ -50,7 +50,7 @@ public class AmazonScraperTest {
     public void throwsWhenNoPriceFound() throws Exception {
         String html = "<html><body><p>No price here</p></body></html>";
         Document doc = Jsoup.parse(html);
-        AmazonScraper scraper = new AmazonScraper();
+        AmazonScraper scraper = new AmazonScraper(10);
 
         Method method = AmazonScraper.class.getDeclaredMethod("extractPrice", Document.class);
         method.setAccessible(true);

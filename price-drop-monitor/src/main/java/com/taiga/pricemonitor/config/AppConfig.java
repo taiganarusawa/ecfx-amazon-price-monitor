@@ -8,6 +8,8 @@ public class AppConfig {
     private double priceDropThresholdPercent;
     private NotificationConfig notification;
     private boolean testMode;
+    private int dashboardPort;
+    private int scraperTimeoutSeconds;
 
     public List<ProductConfig> getProducts() {
         return products;
@@ -29,6 +31,14 @@ public class AppConfig {
         return testMode;
     }
 
+    public int getDashboardPort() {
+        return dashboardPort;
+    }
+
+    public int getScraperTimeoutSeconds() {
+        return scraperTimeoutSeconds;
+    }
+
     public void setProducts(List<ProductConfig> products) {
         this.products = products;
     }
@@ -47,5 +57,13 @@ public class AppConfig {
 
     public void setTestMode(boolean testMode) {
         this.testMode = testMode;
+    }
+
+    public void setDashboardPort(int dashboardPort) {
+        this.dashboardPort = dashboardPort;
+    }
+
+    public void setScraperTimeoutSeconds(int scraperTimeoutSeconds) {
+        this.scraperTimeoutSeconds = scraperTimeoutSeconds;
     }
 }
