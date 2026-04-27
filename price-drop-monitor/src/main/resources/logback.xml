@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- This supresses unnecessary log messages, allowing easy understanding of debug statements -->
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Silence noisy third-party libraries -->
+    <logger name="org.eclipse.jetty" level="WARN"/>
+    <logger name="spark" level="WARN"/>
+    <logger name="org.sqlite" level="WARN"/>
+
+    <!-- Your application logs at INFO -->
+    <logger name="com.taiga.pricemonitor" level="INFO"/>
+
+    <!-- Default for everything else -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
