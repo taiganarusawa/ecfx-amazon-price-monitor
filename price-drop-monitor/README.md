@@ -44,6 +44,7 @@ git clone https://github.com/taiganarusawa/price-drop-monitor.git
 cd price-drop-monitor
 mvn clean install
 ```
+After running this, all dependencies are downloaded and the project is ready to run.
 
 ---
 

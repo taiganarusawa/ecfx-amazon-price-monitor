@@ -13,17 +13,18 @@ This document covers the three main tradeoffs I considered while building the pr
 I wrote everything through the standard JDBC API instead of using SQLite-specific extensions, so if I ever needed to migrate to PostgreSQL, it would just be a driver swap and a connection string change. None of the queries themselves would need to change.
 
 If this were running at 10x scale, like 30+ products with multiple workers writing at the same time, I would migrate to PostgreSQL. SQLite serializes writes (only one writer at a time), which becomes a bottleneck under load. I'd also want an index on `(product_url, checked_at)` since that matches how the dashboard queries the history table.
+
 ---
 
 ## Tradeoff 2: In-browser dashboard alert vs server-side email/Slack
 
 **The decision:** Trigger notifications from the browser via a banner alert and a Web Notifications API desktop popup.
 
-**Why:** Initially I considered server-side notifications, such as an email or Slack message, which would actually catch the user even when the dashboard isn't open. However, implementing that would require additional setup (email server credentials, Slack app configuration) that could create friction for reviewer trying to get the project running. The in-browser notifications are simpler to implement and test within the scope of this project.
+**Why:** Initially I considered server-side notifications, such as an email or Slack message, which would actually catch the user even when the dashboard isn't open. However, implementing that would require additional setup (email server credentials, Slack app configuration) that could create friction for reviewers trying to get the project running. The in-browser notifications are simpler to implement and test within the scope of this project.
 
 The downside is that the browser needs to be running for desktop notifications to fire though the dashboard tab doesn't have to be focused or even visible. The browser can be minimized, on a different desktop, or behind other apps and the notification still pops up. The only real gap is if the user closes the browser entirely, then they won't get notified until they open the dashboard again.
 
-**The cleaner production design** would be to have the server trigger notifications through a channel, such as an email or Slack message, which would alert the user even if they're not actively monitoring the dashboard. The dashboard could still have its own alerts for users who have it open, but the server-side notifications would be more reliable for catching drops in real-time.
+The cleaner production design would be to have the server trigger notifications through a channel, such as an email or Slack message, which would alert the user even if they're not actively monitoring the dashboard. The dashboard could still have its own alerts for users who have it open, but the server-side notifications would be more reliable for catching drops in real-time.
 
 ---
 
