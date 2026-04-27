@@ -28,8 +28,8 @@ public class PriceComparator {
         boolean meetsThreshold = dropPercent >= thresholdPercent;
 
         if (meetsThreshold) {
-            logger.info("Price drop detected: previous={} current={} dropPercent={:.2f}%",
-                    previousPrice, currentPrice, dropPercent);
+            logger.info("Price drop detected: previous={} current={} dropPercent={}%",
+                previousPrice, currentPrice, String.format("%.2f", dropPercent));
         }
 
         return new PriceDropResult(meetsThreshold, previousPrice, currentPrice, dropPercent);
