@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- This supresses unnecessary log messages, allowing easy understanding of debug statements -->
+    <!-- This suppresses unnecessary log messages, allowing easy understanding of debug statements -->
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -13,7 +13,7 @@
     <logger name="spark" level="WARN"/>
     <logger name="org.sqlite" level="WARN"/>
 
-    <!-- Your application logs at INFO -->
+    <!-- Application logs at INFO -->
     <logger name="com.taiga.pricemonitor" level="INFO"/>
 
     <!-- Default for everything else -->
