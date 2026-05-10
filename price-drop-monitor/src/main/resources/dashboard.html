@@ -133,8 +133,12 @@
                         deltaEl.classList.add(diff < 0 ? 'down' : 'up');
                     }
 
+                    // check for price drop
+                    const threshold = data.priceDropThresholdPercent || 10.0;
+                    const dropPercent = (previous.price - latest.price) / previous.price * 100;
+
                     // Price drop alert — only show on a real drop
-                    if (latest.price < previous.price) {
+                    if (dropPercent >= threshold) {
                         const dropPercent = ((previous.price - latest.price) / previous.price * 100).toFixed(2);
                         const alertEl = document.getElementById('alert-' + safeId);
                         alertEl.style.display = 'block';

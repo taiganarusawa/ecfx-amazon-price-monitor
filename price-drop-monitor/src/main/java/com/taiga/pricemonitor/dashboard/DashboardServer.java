@@ -41,6 +41,7 @@ public class DashboardServer {
             Map<String, Object> response = new HashMap<>();
 
             response.put("checkIntervalMinutes", config.getCheckIntervalMinutes());
+            response.put("priceDropThresholdPercent", config.getPriceDropThresholdPercent());
 
             Map<String, Object> products = new HashMap<>();
             for (ProductConfig product : config.getProducts()) {
